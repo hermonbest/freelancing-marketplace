@@ -4,6 +4,9 @@ Django settings for freelance_project project.
 import os
 from pathlib import Path
 from decouple import config
+import os
+from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,7 +34,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # This should be near the top
+
+    'corsheaders.middleware.CorsMiddleware',  
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # This should be near the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -60,17 +66,26 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'freelance_project.wsgi.application'
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sira_db',
-        'USER': 'postgres',
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '5432',
+# Database
+# Use PostgreSQL in production, SQLite in development
+if os.environ.get('RENDER'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME'),
+            'USER': os.environ.get('DB_USER'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
+            'HOST': os.environ.get('DB_HOST'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -86,6 +101,17 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# For Render deployment
+if os.environ.get('RENDER'):
+    ALLOWED_HOSTS = ['.onrender.com']
+    DEBUG = False
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    DEBUG = True
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -119,15 +145,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+# Add your Vercel frontend URL after deployment
+# CORS_ALLOWED_ORIGINS.append("https://your-frontend-url.vercel.app")
 
-# Add this to handle CSRF properly
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
-# For development only - remove in production
+# Add your Render backend URL after deployment
+# CSRF_TRUSTED_ORIGINS.append("https://your-backend-url.onrender.com")# For development only - remove in production
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_SAMESITE = 'Lax'
