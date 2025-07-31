@@ -44,23 +44,15 @@ def login_view(request):
 # which often triggers CSRF checks. Keep @permission_classes([AllowAny]).
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@authentication_classes([]) # <--- Key Change: Explicitly disable authentication classes
+@authentication_classes([]) # Explicitly disable all authentication classes
 def logout_view(request):
     """
     Logout the user by invalidating the session.
-    Explicitly allows any origin and bypasses DRF authentication context.
+    Explicitly allows any origin and bypasses all authentication/permission classes
+    that might trigger CSRF checks.
     """
     logout(request)
     return Response({'message': 'Logout successful'})
-# --- End of logout_view ---
-
-@api_view(['GET'])
-def current_user(request):
-    if request.user.is_authenticated:
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-    else:
-        return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['PUT'])
 def update_profile(request):
