@@ -1,16 +1,13 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import UserSerializer, LoginSerializer
 
 @api_view(['POST'])
-@permission_classes([AllowAny]) # Add this decorator
-def logout_view(request):
-    logout(request)
-    return Response({'message': 'Logout successful'})
+@permission_classes([AllowAny])
 def register(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
@@ -41,7 +38,9 @@ def login_view(request):
             }, status=status.HTTP_401_UNAUTHORIZED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Ensure only one definition of logout_view exists, and it has the decorator
 @api_view(['POST'])
+@permission_classes([AllowAny]) # This decorator is crucial here
 def logout_view(request):
     logout(request)
     return Response({'message': 'Logout successful'})
