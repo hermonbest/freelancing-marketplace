@@ -6,7 +6,6 @@ from pathlib import Path
 from decouple import config
 import os
 from pathlib import Path
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -143,7 +142,7 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://your-frontend-vercel-url.vercel.app",
+    "https://sira-pink.vercel.app",
 ]
 
 # Add your Vercel frontend URL after deployment
@@ -152,7 +151,8 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://your-render-backend-url.onrender.com",
+    "https://freelancing-marketplace.onrender.com"
+     "https://sira-pink.vercel.app",
 ]
 
 # Add your Render backend URL after deployment
