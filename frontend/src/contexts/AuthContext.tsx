@@ -47,15 +47,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(userData);
   };
 
-  const logout = async () => {
-    try {
-      await authAPI.logout();
-      setUser(null);
-    } catch (error) {
-      console.error("Logout error:", error);
-      setUser(null);
-    }
-  };
+const logout = async () => {
+  try {
+    // Ensure this is a POST request
+    await authAPI.logout(); // This should map to api.post('/auth/logout/')
+    setUser(null);
+    // Optionally, force a page reload to clear any local state:
+    // window.location.reload();
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Even if the API call fails, clear local state to prevent UI confusion
+    setUser(null);
+  }
+};
 
   const value = {
     user,
