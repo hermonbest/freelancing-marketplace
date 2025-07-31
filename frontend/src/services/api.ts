@@ -62,15 +62,42 @@ api.interceptors.response.use(
   }
 );
 
-// --- Define interfaces for data types (Optional but good practice) ---
-// (Keep your existing interface definitions for RegisterData, LoginData, etc.)
-// ...
+// --- Define interfaces for data types (Fixing the missing definitions) ---
+
+interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  user_type: string; // 'freelancer' or 'client'
+}
+
+interface LoginData {
+  username: string;
+  password: string;
+}
+
+interface JobData {
+  title: string;
+  description: string;
+  category: string;
+  experience_level: string; // 'entry', 'intermediate', 'expert'
+  is_fixed_price: boolean;
+  budget: number | null;
+  deadline: string | null; // ISO 8601 date string or null
+}
+
+interface ApplicationData {
+  cover_letter: string;
+  bid_amount: number | null;
+}
 
 // --- API Endpoint Definitions ---
-// (Keep your existing authAPI and jobsAPI definitions)
+
 export const authAPI = {
   register: (data: RegisterData) => api.post("/auth/register/", data),
-  login: (LoginData) => api.post("/auth/login/", data),
+  login: (data: LoginData) => api.post("/auth/login/", data),
   logout: () => api.post("/auth/logout/"), // This will now use the corrected backend view
   getCurrentUser: () => api.get("/auth/current/"),
   updateProfile: (data: any) => api.put("/auth/profile/", data),
