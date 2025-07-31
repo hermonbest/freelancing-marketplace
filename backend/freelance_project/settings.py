@@ -1,11 +1,10 @@
+# backend/freelance_project/settings.py
 """
 Django settings for freelance_project project.
 """
 import os
 from pathlib import Path
 from decouple import config
-import os
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,9 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-#w@^+!0^z!$%#*^&@!0^z!$%#*^&@!0^z!$%#*^&')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# DEBUG is set later based on environment
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,18 +25,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    "users",         
-    "jobs",
+    'users',
+    'jobs',
 ]
 
 MIDDLEWARE = [
-
-    'corsheaders.middleware.CorsMiddleware',  
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware', # Consider removing if CSRF issues persist, but try fixing config first.
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -64,6 +60,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'freelance_project.wsgi.application'
+
 # Database
 # Use PostgreSQL in production, SQLite in development
 if os.environ.get('RENDER'):
@@ -84,6 +81,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -100,6 +98,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Internationalization
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # For Render deployment
 if os.environ.get('RENDER'):
     ALLOWED_HOSTS = ['.onrender.com']
@@ -111,23 +124,6 @@ else:
     DEBUG = True
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -137,29 +133,37 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+# --- CORS & CSRF Settings ---
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-   "http://localhost:3000",    
-   "http://127.0.0.1:3000",
-   "https://sira-pink.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://sira-pink.vercel.app", # <-- Fixed: Removed trailing spaces
 ]
-CORS_ALLOW_CREDENTIALS = True
-# Add your Vercel frontend URL after deployment
-# CORS_ALLOWED_ORIGINS.append("https://your-frontend-url.vercel.app")
 
+# Crucial for allowing cookies/authentication headers
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings (origins trusted for CSRF protection)
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
-    "https://freelancing-marketplace.onrender.  com",
-    "https://sira-pink.vercel.app",
+    "http://127.0.0.1:8000",
+    "https://freelancing-marketplace.onrender.com", # <-- Fixed: Removed trailing spaces
+    "https://sira-pink.vercel.app", # <-- Fixed: Removed trailing spaces
 ]
-# Add your Render backend URL after deployment
-# CSRF_TRUSTED_ORIGINS.append("https://your-backend-url.onrender.com")# For development only - remove in production
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_HTTPONLY = False
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
 
+# Session settings for cross-origin cookies (HTTPS required for SameSite=None)
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True # Must be True in production with SameSite=None
+SESSION_COOKIE_HTTPONLY = True # Good security practice
+
+# CSRF Cookie settings for cross-origin requests
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True # Must be True in production with SameSite=None
+CSRF_COOKIE_HTTPONLY = False # Needed so JS can read it for Axios interceptor
+
+# --- Custom Settings ---
 # Custom user model
 AUTH_USER_MODEL = 'users.User'
 

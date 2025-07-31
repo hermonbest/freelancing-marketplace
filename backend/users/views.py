@@ -1,15 +1,11 @@
 # backend/users/views.py
-from django.http import HttpResponse
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import UserSerializer, LoginSerializer
-# Import necessary decorators for CSRF exemption
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import wraps
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -43,37 +39,19 @@ def login_view(request):
             }, status=status.HTTP_401_UNAUTHORIZED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# --- Corrected and single logout_view definition ---
+# --- Corrected logout_view ---
+# Use @authentication_classes([]) to bypass DRF's default session auth context
+# which often triggers CSRF checks. Keep @permission_classes([AllowAny]).
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@wraps(csrf_exempt) # Apply csrf_exempt using wraps to bypass CSRF checks for this DRF view
+@authentication_classes([]) # <--- Key Change: Explicitly disable authentication classes
 def logout_view(request):
     """
     Logout the user by invalidating the session.
-    Explicitly allows any origin and bypasses CSRF checks.
+    Explicitly allows any origin and bypasses DRF authentication context.
     """
     logout(request)
-    logout(request)  # clears session on server side
-    response = Response({'message': 'Logout successful'})
-
-    # Explicitly expire cookies (attributes must match how they were set)
-    response.delete_cookie(
-        key='sessionid',
-        path='/',
-        secure=True,
-        samesite='None',
-        httponly=True,
-    )
-    response.delete_cookie(
-        key='csrftoken',
-        path='/',
-        secure=True,
-        samesite='None',
-        httponly=False,  # csrf cookie is not HttpOnly so frontend can read it
-    )
-
-    return response
-    return response
+    return Response({'message': 'Logout successful'})
 # --- End of logout_view ---
 
 @api_view(['GET'])
