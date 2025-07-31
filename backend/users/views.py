@@ -1,3 +1,4 @@
+# backend/users/views.py
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -5,20 +6,10 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import UserSerializer, LoginSerializer
-from django.utils.decorators import method_decorator
-from django.utils.decorators import wraps
+# Import necessary decorators for CSRF exemption
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import wraps
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-@wraps(csrf_exempt) # Apply csrf_exempt using wraps
-def logout_view(request):
-    """
-    Logout the user by invalidating the session.
-    Uses @wraps(csrf_exempt) to bypass CSRF checks.
-    """
-    logout(request)
-    return Response({'message': 'Logout successful'})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
@@ -51,12 +42,18 @@ def login_view(request):
             }, status=status.HTTP_401_UNAUTHORIZED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Ensure only one definition of logout_view exists, and it has the decorator
+# --- Corrected and single logout_view definition ---
 @api_view(['POST'])
-@permission_classes([AllowAny]) # This decorator is crucial here
+@permission_classes([AllowAny])
+@wraps(csrf_exempt) # Apply csrf_exempt using wraps to bypass CSRF checks for this DRF view
 def logout_view(request):
+    """
+    Logout the user by invalidating the session.
+    Explicitly allows any origin and bypasses CSRF checks.
+    """
     logout(request)
     return Response({'message': 'Logout successful'})
+# --- End of logout_view ---
 
 @api_view(['GET'])
 def current_user(request):
