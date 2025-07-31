@@ -1,54 +1,75 @@
+// frontend/src/services/api.ts
 import axios from "axios";
 
-// Use different base URLs for development and production
-const API_BASE_URL = "https://freelancing-marketplace.onrender.com/api";
+// Determine the base URL based on the environment
+// In production (on Vercel), it should point to your Render backend
+// In development (localhost), it points to your local Django server
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://freelancing-marketplace.onrender.com/api" // Your Render backend URL
+    : "http://localhost:8000/api"; // Your local development backend URL
+
+// Create an Axios instance with default configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // Crucial for sending cookies (sessionid, csrftoken)
   headers: {
     "Content-Type": "application/json",
+    // Note: We are NOT manually setting 'X-CSRFToken' here.
+    // Axios with `withCredentials: true` should handle session cookies automatically.
+    // Django REST Framework, with `@wraps(csrf_exempt)` on the backend logout view,
+    // should not require the CSRF header for that specific endpoint.
   },
 });
 
-// Add request interceptor to include CSRF token
+// Request Interceptor (Optional, but useful for debugging or adding global headers if needed)
 api.interceptors.request.use(
   (config) => {
-    // Get CSRF token from cookies
-    const csrftoken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("csrftoken="))
-      ?.split("=")[1];
-
-    if (csrftoken) {
-      config.headers["X-CSRFToken"] = csrftoken;
-    }
-
+    // You can log requests for debugging
+    // console.log('API Request:', config);
     return config;
   },
   (error) => {
+    // Handle request errors
+    console.error("API Request Error:", error);
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor to handle authentication errors
+// Response Interceptor (Keep your existing error handling)
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // You can log responses for debugging if needed
+    // console.log('API Response:', response);
+    return response;
+  },
   (error) => {
+    // Any status codes outside the range of 2xx cause this function to trigger
     if (error.response?.status === 403) {
-      console.log("Authentication required for this action");
+      // This message is helpful, keep it or modify as needed
+      console.log("Authentication required for this action or CSRF failed.");
+      // Depending on your app's needs, you might want to trigger a logout or redirect here
+      // For example, if the 403 is due to an expired session:
+      // if (error.response.data?.detail === "Authentication credentials were not provided.") {
+      //    // Trigger context logout or redirect to login
+      // }
     }
+    // Log the full error for debugging
+    console.error("API Response Error:", error);
     return Promise.reject(error);
   }
 );
 
-// Define interfaces for our data types
+// --- Define interfaces for data types (Optional but good practice for TypeScript) ---
+
 interface RegisterData {
   username: string;
   email: string;
   password: string;
   first_name: string;
   last_name: string;
-  user_type: string;
+  user_type: string; // 'freelancer' or 'client'
 }
 
 interface LoginData {
@@ -60,10 +81,10 @@ interface JobData {
   title: string;
   description: string;
   category: string;
-  experience_level: string;
+  experience_level: string; // 'entry', 'intermediate', 'expert'
   is_fixed_price: boolean;
   budget: number | null;
-  deadline: string | null;
+  deadline: string | null; // ISO 8601 date string or null
 }
 
 interface ApplicationData {
@@ -71,28 +92,31 @@ interface ApplicationData {
   bid_amount: number | null;
 }
 
+// --- API Endpoint Definitions ---
+
 // Auth endpoints
 export const authAPI = {
   register: (data: RegisterData) => api.post("/auth/register/", data),
   login: (data: LoginData) => api.post("/auth/login/", data),
-  logout: () => api.post("/auth/logout/"),
-  getCurrentUser: () => api.get("/auth/current/"),
-  updateProfile: (data: any) => api.put("/auth/profile/", data),
+  logout: () => api.post("/auth/logout/"), // POST request, uses credentials
+  getCurrentUser: () => api.get("/auth/current/"), // GET request, uses credentials
+  updateProfile: (data: any) => api.put("/auth/profile/", data), // PUT request, uses credentials
 };
 
 // Jobs endpoints
 export const jobsAPI = {
-  getJobs: (params?: any) => api.get("/jobs/", { params }),
-  getJob: (id: number) => api.get(`/jobs/${id}/`),
-  createJob: (data: JobData) => api.post("/jobs/create/", data),
-  getMyJobs: () => api.get("/jobs/my-jobs/"),
-  getMyApplications: () => api.get("/jobs/my-applications/"),
+  getJobs: (params?: any) => api.get("/jobs/", { params }), // GET, public endpoint
+  getJob: (id: number) => api.get(`/jobs/${id}/`), // GET, public endpoint
+  createJob: (data: JobData) => api.post("/jobs/create/", data), // POST, requires auth
+  getMyJobs: () => api.get("/jobs/my-jobs/"), // GET, requires auth (client)
+  getMyApplications: () => api.get("/jobs/my-applications/"), // GET, requires auth (freelancer)
   applyToJob: (jobId: number, data: ApplicationData) =>
-    api.post(`/jobs/${jobId}/apply/`, data),
+    api.post(`/jobs/${jobId}/apply/`, data), // POST, requires auth (freelancer)
   getJobApplications: (jobId: number) =>
-    api.get(`/jobs/${jobId}/applications/`),
+    api.get(`/jobs/${jobId}/applications/`), // GET, requires auth (job owner/client)
   updateApplicationStatus: (applicationId: number, status: string) =>
-    api.put(`/jobs/applications/${applicationId}/status/`, { status }),
+    api.put(`/jobs/applications/${applicationId}/status/`, { status }), // PUT, requires auth (job owner/client)
 };
 
+// Export the configured Axios instance as default if needed elsewhere
 export default api;
