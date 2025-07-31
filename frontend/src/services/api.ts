@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Replace the API_BASE_URL line with:
+// Replace the API_BASE_URL line with your actual Render backend URL:
 const API_BASE_URL = 'https://freelancing-marketplace.onrender.com/api';
 const api = axios.create({
   baseURL: API_BASE_URL,
