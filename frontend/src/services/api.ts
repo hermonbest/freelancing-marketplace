@@ -1,11 +1,9 @@
 import axios from "axios";
 
 // Use different base URLs for development and production
-const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "http://localhost:8000/api" // We'll update this after deploying backend
-    : "http://localhost:8000/api";
-
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://freelancing-marketplace.onrender.com'  // Replace with your actual Render URL
+  : 'http://localhost:8000/api';
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
