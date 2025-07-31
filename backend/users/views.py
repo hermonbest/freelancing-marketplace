@@ -7,20 +7,18 @@ from .models import User
 from .serializers import UserSerializer, LoginSerializer
 from django.utils.decorators import method_decorator
 from django.utils.decorators import wraps
-from django.views.decorators.csrf import ensure_csrf_cookie
-
-
-@api_view(['GET'])
-@ensure_csrf_cookie
-def ping_csrf(request):
-    return Response({"detail": "csrf cookie set"})
+from django.views.decorators.csrf import csrf_exempt
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@wraps(csrf_exempt) # Apply csrf_exempt using wraps
 def logout_view(request):
+    """
+    Logout the user by invalidating the session.
+    Uses @wraps(csrf_exempt) to bypass CSRF checks.
+    """
     logout(request)
     return Response({'message': 'Logout successful'})
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
