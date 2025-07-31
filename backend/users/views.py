@@ -1,4 +1,5 @@
 # backend/users/views.py
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -52,7 +53,27 @@ def logout_view(request):
     Explicitly allows any origin and bypasses CSRF checks.
     """
     logout(request)
-    return Response({'message': 'Logout successful'})
+    logout(request)  # clears session on server side
+    response = Response({'message': 'Logout successful'})
+
+    # Explicitly expire cookies (attributes must match how they were set)
+    response.delete_cookie(
+        key='sessionid',
+        path='/',
+        secure=True,
+        samesite='None',
+        httponly=True,
+    )
+    response.delete_cookie(
+        key='csrftoken',
+        path='/',
+        secure=True,
+        samesite='None',
+        httponly=False,  # csrf cookie is not HttpOnly so frontend can read it
+    )
+
+    return response
+    return response
 # --- End of logout_view ---
 
 @api_view(['GET'])
