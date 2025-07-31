@@ -139,31 +139,26 @@ REST_FRAMEWORK = {
 }
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-     "http://localhost:3000",        # Local development frontend
-    "http://127.0.0.1:3000",        # Alternative local address
-    "https://sira-pink.vercel.app",
+   "http://localhost:3000",    
+   "http://127.0.0.1:3000",
+   "https://sira-pink.vercel.app",
 ]
-
 CORS_ALLOW_CREDENTIALS = True
 # Add your Vercel frontend URL after deployment
 # CORS_ALLOWED_ORIGINS.append("https://your-frontend-url.vercel.app")
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "https://freelancing-marketplace.onrender.com",
-     "https://sira-pink.vercel.app",
+    "https://freelancing-marketplace.onrender.  com",
+    "https://sira-pink.vercel.app",
 ]
 # Add your Render backend URL after deployment
 # CSRF_TRUSTED_ORIGINS.append("https://your-backend-url.onrender.com")# For development only - remove in production
-CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
-
-# Session settings
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
 
 # Custom user model
 AUTH_USER_MODEL = 'users.User'

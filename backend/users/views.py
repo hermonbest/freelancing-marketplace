@@ -5,14 +5,18 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import UserSerializer, LoginSerializer
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils.decorators import wraps
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-@csrf_exempt # Add this decorator to exempt from CSRF checks
+
+@api_view(['GET'])
+@ensure_csrf_cookie
+def ping_csrf(request):
+    return Response({"detail": "csrf cookie set"})
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@wraps(csrf_exempt)
 def logout_view(request):
     logout(request)
     return Response({'message': 'Logout successful'})
