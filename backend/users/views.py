@@ -7,7 +7,10 @@ from .models import User
 from .serializers import UserSerializer, LoginSerializer
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny]) # Add this decorator
+def logout_view(request):
+    logout(request)
+    return Response({'message': 'Logout successful'})
 def register(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
