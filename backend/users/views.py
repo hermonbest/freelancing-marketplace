@@ -64,3 +64,18 @@ def update_profile(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+@api_view(['GET'])
+def current_user(request):
+    """
+    Get the currently authenticated user's details.
+    """
+    if request.user.is_authenticated:
+        # Use your custom UserSerializer
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+    else:
+        # Return a 401 if not authenticated
+        # The global permission class (IsAuthenticated) might handle this,
+        # but an explicit check is often clearer.
+        return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
