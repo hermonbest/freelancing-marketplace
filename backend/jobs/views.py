@@ -31,15 +31,22 @@ def job_detail(request, job_id):
     serializer = JobSerializer(job)
     return Response(serializer.data)
 
+
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])  # Only authenticated clients can post jobs
+# @permission_classes([IsAuthenticated]) # If relying on global default
 def create_job(request):
-    if request.user.user_type != 'client':
-        return Response({'error': 'Only clients can post jobs'}, status=status.HTTP_403_FORBIDDEN)
-    
+    # Ensure only clients can post jobs
+    if not request.user.is_authenticated:
+        return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+    # request.user should be available and authenticated here if the session was valid
+
+    if hasattr(request.user, 'user_type') and request.user.user_type != 'client':
+         return Response({'error': 'Only clients can post jobs'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = JobSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(client=request.user)
+        # Save the job, associating it with the client (request.user)
+        serializer.save(client=request.user) # request.user should be the logged-in client
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
