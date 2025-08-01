@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import axios from "axios"; // 👈 Add this
 import { AuthProvider } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -13,6 +14,13 @@ import MyApplications from "./pages/MyApplications";
 import "./App.css";
 
 function App() {
+  useEffect(() => {
+    // 👇 This sets the CSRF cookie from your Django backend
+    axios.get("https://freelancing-marketplace.onrender.com/api/auth/csrf/", {
+      withCredentials: true,
+    });
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
