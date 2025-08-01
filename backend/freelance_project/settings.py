@@ -145,9 +145,11 @@ CSRF_TRUSTED_ORIGINS = [
 # Ensure cookies can be sent cross-site
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE   = True
-SESSION_COOKIE_DOMAIN   = '.onrender.com'
+SESSION_COOKIE_DOMAIN = 'freelancing-marketplace.onrender.com'
+
+
 
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE   = True
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_DOMAIN   = '.onrender.com'
+CSRF_COOKIE_DOMAIN = 'freelancing-marketplace.onrender.com'

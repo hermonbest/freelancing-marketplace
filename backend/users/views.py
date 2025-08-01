@@ -6,6 +6,13 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import UserSerializer, LoginSerializer
+# users/views.py
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({"message": "CSRF cookie set"})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
