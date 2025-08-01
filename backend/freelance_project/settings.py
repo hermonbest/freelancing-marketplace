@@ -135,34 +135,29 @@ REST_FRAMEWORK = {
 }
 
 # --- CORS & CSRF Settings ---
-# CORS settings
+# --- CORS Configuration ---
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://sira-pink.vercel.app", # <-- Fixed: Removed trailing spaces
+    "https://sira-pink.vercel.app", # Ensure no trailing space here either
+    # Add other origins if needed
 ]
+CORS_ALLOW_CREDENTIALS = True # This is correct
 
-# Crucial for allowing cookies/authentication headers
-CORS_ALLOW_CREDENTIALS = True
-
-# CSRF settings (origins trusted for CSRF protection)
+# --- CSRF Configuration ---
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://freelancing-marketplace.onrender.com", # <-- Fixed: Removed trailing spaces
-    "https://sira-pink.vercel.app", # <-- Fixed: Removed trailing spaces
+    "https://freelancing-marketplace.onrender.com", # FIXED: Removed trailing space
+    "https://sira-pink.vercel.app", # Ensure no trailing space here either
 ]
 
-# Session settings for cross-origin cookies (HTTPS required for SameSite=None)
+# Session/CSRF cookie settings for cross-origin (already provided, looks correct)
 SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True # Must be True in production with SameSite=None
-SESSION_COOKIE_HTTPONLY = True # Good security practice
-
-# CSRF Cookie settings for cross-origin requests
+SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True # Must be True in production with SameSite=None
-CSRF_COOKIE_HTTPONLY = False # Needed so JS can read it for Axios interceptor
-
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False 
 # --- Custom Settings ---
 # Custom user model
 AUTH_USER_MODEL = 'users.User'
