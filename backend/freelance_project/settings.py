@@ -1,21 +1,24 @@
 # backend/freelance_project/settings.py
-"""
-Django settings for freelance_project project.
-"""
+
 import os
 from pathlib import Path
 from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-#w@^+!0^z!$%#*^&@!0^z!$%#*^&@!0^z!$%#*^&')
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-#w@^+!0^z!$%#*^&@!0^z!$%#*^&@!0^z!$%#*^&'
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG is set later based on environment
+# DEBUG toggles based on whether we're on Render
+if os.environ.get('RENDER'):
+    DEBUG = False
+    ALLOWED_HOSTS = ['.onrender.com']
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,8 +26,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'corsheaders',
+
     'users',
     'jobs',
 ]
@@ -35,7 +40,10 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware', # Consider removing if CSRF issues persist, but try fixing config first.
+
+    # Re-enable CSRF protection
+    'django.middleware.csrf.CsrfViewMiddleware',
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -61,70 +69,54 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'freelance_project.wsgi.application'
 
-# Database
-# Use PostgreSQL in production, SQLite in development
+# Database: PostgreSQL on Render, SQLite locally
 if os.environ.get('RENDER'):
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'ENGINE':   'django.db.backends.postgresql',
+            'NAME':     os.environ['DB_NAME'],
+            'USER':     os.environ['DB_USER'],
+            'PASSWORD': os.environ['DB_PASSWORD'],
+            'HOST':     os.environ['DB_HOST'],
+            'PORT':     os.environ.get('DB_PORT', '5432'),
         }
     }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME':   BASE_DIR / 'db.sqlite3',
         }
     }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = 'UTC'
+USE_I18N      = True
+USE_TZ        = True
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_URL  = '/static/'
+MEDIA_URL   = '/media/'
+MEDIA_ROOT  = BASE_DIR / 'media'
 
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# For Render deployment
 if os.environ.get('RENDER'):
-    ALLOWED_HOSTS = ['.onrender.com']
-    DEBUG = False
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-    DEBUG = True
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# REST Framework settings
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL    = 'users.User'
+LOGIN_URL          = '/api/auth/login/'
+LOGOUT_URL         = '/api/auth/logout/'
+
+# REST Framework: only session auth, require login
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -134,34 +126,28 @@ REST_FRAMEWORK = {
     ],
 }
 
-# --- CORS & CSRF Settings ---
-# --- CORS Configuration ---
+# CORS & CSRF configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://sira-pink.vercel.app", # Ensure no trailing space here either
-    # Add other origins if needed
+    "https://sira-pink.vercel.app",
 ]
-CORS_ALLOW_CREDENTIALS = True # This is correct
 
-# --- CSRF Configuration ---
+CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://freelancing-marketplace.onrender.com", # FIXED: Removed trailing space
-    "https://sira-pink.vercel.app", # Ensure no trailing space here either
+    "https://freelancing-marketplace.onrender.com",
+    "https://sira-pink.vercel.app",
 ]
 
-# Session/CSRF cookie settings for cross-origin (already provided, looks correct)
+# Ensure cookies can be sent cross-site
 SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = False 
-# --- Custom Settings ---
-# Custom user model
-AUTH_USER_MODEL = 'users.User'
+SESSION_COOKIE_SECURE   = True
+SESSION_COOKIE_DOMAIN   = '.onrender.com'
 
-# Login/Logout URLs
-LOGIN_URL = '/api/auth/login/'
-LOGOUT_URL = '/api/auth/logout/'
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE   = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_DOMAIN   = '.onrender.com'
